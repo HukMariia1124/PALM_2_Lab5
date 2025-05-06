@@ -1,5 +1,4 @@
 ﻿using System.Reflection.PortableExecutable;
-using static System.Console;
 using MyTime = (int hour, int min, int sec);
 
 namespace Lab5
@@ -10,21 +9,21 @@ namespace Lab5
         {
             MyTime time = InputTuple();
 
-            WriteLine($"\nМетод MyTimeToString формує рядкове подання часу з кортежа у форматі H:mm:s:\n{MyTimeToString(time)}");
+            Console.WriteLine($"\nМетод MyTimeToString формує рядкове подання часу з кортежа у форматі H:mm:s:\n{MyTimeToString(time)}");
             MyTime normalized_time = Normalize(time);
-            WriteLine($"Метод Normalize приводить години до проміжку 0...23, хвилини й секунди до проміжку 0...59:\n{MyTimeToString(normalized_time)}");
-            WriteLine($"Метод ToSecSinceMidnight перетворює час {normalized_time} у кількість секунд, що пройшли від початку доби:\n{ToSecSinceMidnight(time)}");
-            WriteLine($"Метод FromSecSinceMidnight перетворює кількість секунд, що пройшли від початку доби ({ToSecSinceMidnight(normalized_time)}), у кортеж MyTime:\n{MyTimeToString(FromSecSinceMidnight(ToSecSinceMidnight(time)))}");
-            WriteLine($"Метод AddOneSecond додає до часу, поданого кортежем {normalized_time}, одну секунду:\n{MyTimeToString(AddOneSecond(time))}");
-            WriteLine($"Метод AddOneMinute додає до часу, поданого кортежем {normalized_time}, одну хвилину:\n{MyTimeToString(AddOneMinute(time))}");
-            WriteLine($"Метод AddOneHour додає до часу, поданого кортежем {normalized_time}, одну годину:\n{MyTimeToString(AddOneHour(time))}");
-            WriteLine($"Метод AddSeconds додає до структури {normalized_time} вказану кількість секунд s:");
-            //WriteLine(MyTimeToString(AddSeconds(time,30)));
-            WriteLine(MyTimeToString(AddSeconds(time)));
-            WriteLine($"Метод Difference вертає різницю між двома моментами, заданими кортежами:");
-            //WriteLine(Difference(time, (1,1,1)));
-            WriteLine(Difference(time) + "c");
-            WriteLine($"Метод ToSecSinceMidnight формує рядок згідно розкладу дзвінків:\n{WhatLesson(time)}");
+            Console.WriteLine($"Метод Normalize приводить години до проміжку 0...23, хвилини й секунди до проміжку 0...59:\n{MyTimeToString(normalized_time)}");
+            Console.WriteLine($"Метод ToSecSinceMidnight перетворює час {normalized_time} у кількість секунд, що пройшли від початку доби:\n{ToSecSinceMidnight(time)}");
+            Console.WriteLine($"Метод FromSecSinceMidnight перетворює кількість секунд, що пройшли від початку доби ({ToSecSinceMidnight(normalized_time)}), у кортеж MyTime:\n{MyTimeToString(FromSecSinceMidnight(ToSecSinceMidnight(time)))}");
+            Console.WriteLine($"Метод AddOneSecond додає до часу, поданого кортежем {normalized_time}, одну секунду:\n{MyTimeToString(AddOneSecond(time))}");
+            Console.WriteLine($"Метод AddOneMinute додає до часу, поданого кортежем {normalized_time}, одну хвилину:\n{MyTimeToString(AddOneMinute(time))}");
+            Console.WriteLine($"Метод AddOneHour додає до часу, поданого кортежем {normalized_time}, одну годину:\n{MyTimeToString(AddOneHour(time))}");
+            Console.WriteLine($"Метод AddSeconds додає до структури {normalized_time} вказану кількість секунд s:");
+            //Console.WriteLine(MyTimeToString(AddSeconds(time,30)));
+            Console.WriteLine(MyTimeToString(AddSeconds(time)));
+            Console.WriteLine($"Метод Difference вертає різницю між двома моментами, заданими кортежами:");
+            //Console.WriteLine(Difference(time, (1,1,1)));
+            Console.WriteLine(Difference(time) + "c");
+            Console.WriteLine($"Метод ToSecSinceMidnight формує рядок згідно розкладу дзвінків:\n{WhatLesson(time)}");
         }
 
         private static MyTime InputTuple()
@@ -38,8 +37,8 @@ namespace Lab5
         {
             do
             {
-                Write(s);
-                if (int.TryParse(ReadLine(), out int a)) return a;
+                Console.Write(s);
+                if (int.TryParse(Console.ReadLine(), out int a)) return a;
                 else Program.Error();
             }
             while (true);
@@ -83,14 +82,14 @@ namespace Lab5
         static MyTime AddSeconds(MyTime time, int? s = null)
         {
             if (s == null) s = Input("Введіть скільки секунд додати: ");
-            WriteLine($"{MyTimeToString(Normalize(time))} + {s}c");
+            Console.WriteLine($"{MyTimeToString(Normalize(time))} + {s}c");
             s+=ToSecSinceMidnight(time);
             return FromSecSinceMidnight((int)s);
         }
         static int Difference(MyTime time1, MyTime? time2 = null)
         {
             if (time2 == null) time2 = InputTuple();
-            WriteLine($"{MyTimeToString(Normalize(time1))} - {MyTimeToString(Normalize((MyTime)time2))}");
+            Console.WriteLine($"{MyTimeToString(Normalize(time1))} - {MyTimeToString(Normalize((MyTime)time2))}");
             return ToSecSinceMidnight(time1) - ToSecSinceMidnight((MyTime)time2);
         }
         static readonly (int Start, int End)[] schedule =

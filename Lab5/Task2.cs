@@ -1,22 +1,23 @@
 ﻿using System;
+using System.Text;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection.PortableExecutable;
-using static System.Console;
 using static System.Formats.Asn1.AsnWriter;
 using static System.Net.Mime.MediaTypeNames;
 using Person =
-    (
-        string FirstName,
-        string LastName,
-        string Patronymic,
-        string Gender,
-        string DateOfBirth,
-        string MathsScore,
-        string PhysicsScore,
-        string ComputerScienceScore,
-        string Scholarship
-    );
+(
+    string FirstName,
+    string LastName,
+    string Patronymic,
+    string Gender,
+    string DateOfBirth,
+    string MathsScore,
+    string PhysicsScore,
+    string ComputerScienceScore,
+    string Scholarship
+);
+
 
 namespace Lab5
 {
@@ -24,16 +25,14 @@ namespace Lab5
     {
         public static void Processing()
         {
-            List<string[]> data_list = ReadFile();
-            Person[] persons = ParsePersonData(data_list);
+            List<Person> persons = ReadFile();
             GenderChange(ref persons);
-            string header = FormatColumnsAndHeaderReturn(ref persons);
-            RewriteFile(persons, header);
+            RewriteFile(persons);
         }
 
-        public static List<string[]> ReadFile()
+        public static List<Person> ReadFile()
         {
-            List<string[]> data_list = new();
+            List<Person> data_list = new();
             StreamReader? file = null;
             try
             {
@@ -41,18 +40,20 @@ namespace Lab5
             }
             catch (IOException exc)
             {
-                WriteLine("Помилка читання файлу:\n" + exc.Message);
+                Console.WriteLine("Помилка читання файлу:\n" + exc.Message);
                 Program.Main();
             }
             string line;
             while ((line = file?.ReadLine()!) != null)
             {
-                string[] row = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                Person row = (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8]);
                 data_list.Add(row);
             }
             return data_list;
         }
-        static Person[] ParsePersonData(List<string[]> data_list)
+        public static Person[] ParsePersonData(List<string[]> data_list)
         {
             int n = data_list.Count;
             Person[] persons = new Person[n];
@@ -73,20 +74,25 @@ namespace Lab5
             return persons;
         }
 
-        static void GenderChange(ref Person[] persons)
+        static void GenderChange(ref List<Person> persons)
         {
-            for (int i = 0; i < persons.Length; i++)
+            for (int i = 0; i < persons.Count; i++)
             {
-                if (persons[i].Gender == "M" || persons[i].Gender == "М")
-                    persons[i].Gender = "Ч";
-                else if (persons[i].Gender == "F")
-                    persons[i].Gender = "Ж";
+                var person = persons[i];
+                person.Gender = person.Gender switch
+                {
+                    "M" or "М" => "Ч",
+                    "F" => "Ж",
+                    _ => person.Gender
+                };
+                persons[i] = person;
             }
         }
 
-        static string FormatColumnsAndHeaderReturn(ref Person[] persons)
+
+        static string GetTable(ref List<Person> persons)
         {
-            int[] maxLengths = new int[3];
+            int[] maxLengths = [ 9, 8, 10 ]; //FirstName-9 characters, LastName-8, Patronymic-10.
 
             foreach (var person in persons)
             {
@@ -94,24 +100,10 @@ namespace Lab5
                 maxLengths[1] = Math.Max(maxLengths[1], person.LastName.Length);
                 maxLengths[2] = Math.Max(maxLengths[2], person.Patronymic.Length);
             }
-            maxLengths[0] = Math.Max(maxLengths[0], 9);
-            maxLengths[1] = Math.Max(maxLengths[1], 8);
-            maxLengths[2] = Math.Max(maxLengths[2], 10);
 
-            for (int i = 0; i < persons.Length; i++)
-            {
-                persons[i].FirstName = $" {persons[i].FirstName.PadRight(maxLengths[0])} ";
-                persons[i].LastName = $" {persons[i].LastName.PadRight(maxLengths[1])} ";
-                persons[i].Patronymic = $" {persons[i].Patronymic.PadRight(maxLengths[2])} ";
-                persons[i].Gender = $"    {persons[i].Gender}   ";
-                persons[i].DateOfBirth = $"  {persons[i].DateOfBirth} ";
-                persons[i].MathsScore = $"     {persons[i].MathsScore}      ";
-                persons[i].PhysicsScore = $"      {persons[i].PhysicsScore}       ";
-                persons[i].ComputerScienceScore = $"          {persons[i].ComputerScienceScore}           ";
-                persons[i].Scholarship = $" {persons[i].Scholarship.PadLeft(6)} грн. ";
-            }
 
-            return $"|{"FirstName".PadLeft((maxLengths[0] + 9) / 2 + 1).PadRight(maxLengths[0] + 2)}|" +
+            var header =
+                $"|{"FirstName".PadLeft((maxLengths[0] + 9) / 2 + 1).PadRight(maxLengths[0] + 2)}|" +
                 $"{"LastName".PadLeft((maxLengths[1] + 8) / 2 + 1).PadRight(maxLengths[1] + 2)}|" +
                 $"{"Patronymic".PadLeft((maxLengths[2] + 10) / 2 + 1).PadRight(maxLengths[2] + 2)}|" +
                 $" Gender |" +
@@ -120,8 +112,30 @@ namespace Lab5
                 $" PhysicsScore |" +
                 $" ComputerScienceScore |" +
                 $" Scholarship |";
+
+
+            string border = new('-', header.Length - 2);
+            var sb = new StringBuilder(
+                $"┌{border}┐\n" +
+                $"{header}\n" +
+                $"|{border}|\n");
+
+            foreach (Person p in persons)
+                sb.Append($"| {p.FirstName.PadRight(maxLengths[0])} |" +
+                    $" {p.LastName.PadRight(maxLengths[1])} |" +
+                    $" {p.Patronymic.PadRight(maxLengths[2])} |" +
+                    $" {p.Gender.PadLeft(3).PadRight(6)} |" +
+                    $" {p.DateOfBirth.PadLeft(11)} |" +
+                    $" {p.MathsScore.PadLeft(5).PadRight(10)} |" +
+                    $" {p.PhysicsScore.PadLeft(6).PadRight(12)} |" +
+                    $" {p.ComputerScienceScore.PadLeft(10).PadRight(20)} |" +
+                    $" {p.Scholarship.PadLeft(6)} грн. |\n");
+
+            sb.Append($"└{border}┘");
+
+            return sb.ToString();
         }
-        static void RewriteFile(Person[] persons, string header)
+        static void RewriteFile(List<Person> persons)
         {
             FileStream file;
             try
@@ -130,29 +144,12 @@ namespace Lab5
             }
             catch (IOException exc)
             {
-                WriteLine("Помилка створення файлу:\n" + exc.Message);
+                Console.WriteLine("Помилка створення файлу:\n" + exc.Message);
                 return;
             }
-            StreamWriter fstr_out = new StreamWriter(file);
-            string border = new string('-', header.Length - 2);
-            fstr_out.WriteLine($"┌{border}┐");
-            fstr_out.WriteLine(header);
-            fstr_out.WriteLine($"|{border}|");
-            foreach (Person p in persons)
-            {
-                fstr_out.Write("|" + p.FirstName + "|");
-                fstr_out.Write(p.LastName + "|");
-                fstr_out.Write(p.Patronymic + "|");
-                fstr_out.Write(p.Gender + "|");
-                fstr_out.Write(p.DateOfBirth + "|");
-                fstr_out.Write(p.MathsScore + "|");
-                fstr_out.Write(p.PhysicsScore + "|");
-                fstr_out.Write(p.ComputerScienceScore + "|");
-                fstr_out.Write(p.Scholarship + "|");
-                fstr_out.WriteLine();
-            }
-            fstr_out.WriteLine($"└{border}┘");
-            fstr_out.Close();
+            using StreamWriter fstr_out = new(file);
+            fstr_out.WriteLine(GetTable(ref persons));
+
         }
     }
 }
