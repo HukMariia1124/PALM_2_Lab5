@@ -17,6 +17,7 @@ using Person =
     string ComputerScienceScore,
     string Scholarship
 );
+using System.Text.RegularExpressions;
 
 
 namespace Lab5
@@ -30,6 +31,9 @@ namespace Lab5
             RewriteFile(persons);
         }
 
+        private static readonly Regex NameRegex = new(@"^[A-Za-zА-Яа-яІіЇїЄєҐґ'-]+$");
+        private static readonly Regex GenderRegex = new(@"^(М|M|F|Ж|Ч)\b+$");
+        private static readonly Regex ScoreRegex = new(@"^([2-5]|-)$");
         public static List<Person> ReadFile()
         {
             List<Person> data_list = new();
@@ -47,6 +51,52 @@ namespace Lab5
             while ((line = file?.ReadLine()!) != null)
             {
                 var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                
+                if (!NameRegex.IsMatch(parts[0]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Прізвище має складатися лише з букв, дефісів та апострофів");
+                    continue;
+                }
+                if (!NameRegex.IsMatch(parts[1]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Ім'я має складатися лише з букв, дефісів та апострофів");
+                    continue;
+                }
+                if (!NameRegex.IsMatch(parts[2]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). По-батькові має складатися лише з букв, дефісів та апострофів");
+                    continue;
+                }
+                if (!GenderRegex.IsMatch(parts[3]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Стать неправильного формату");
+                    continue;
+                }
+                if (!DateOnly.TryParse(parts[4], out _))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Дата народження неправильного формату");
+                    continue;
+                }
+                if (!ScoreRegex.IsMatch(parts[5]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Оцінка з математики неправильного формату");
+                    continue;
+                }
+                if (!ScoreRegex.IsMatch(parts[6]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Оцінка з фізики неправильного формату");
+                    continue;
+                }
+                if (!ScoreRegex.IsMatch(parts[7]))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Оцінка з інформатики неправильного формату");
+                    continue;
+                }
+                if (!(int.TryParse(parts[8], out int scholarship) && (scholarship == 0 || (scholarship>=1234 && scholarship <=4321))))
+                {
+                    Console.WriteLine($"Помилка в даних ({line}). Стипендія неправильного формату");
+                    continue;
+                }
 
                 Person row = (parts[0], parts[1], parts[2], parts[3], parts[4], parts[5], parts[6], parts[7], parts[8]);
                 data_list.Add(row);

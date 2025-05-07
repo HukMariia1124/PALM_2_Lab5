@@ -69,12 +69,16 @@ namespace Lab5
 
         public static void Add2_Processing()
         {
-            var persons = Task2
-                .ReadFile()
-                .GroupBy(x => GetZodiacSign(DateOnly.Parse(x.DateOfBirth)))
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.ToList());
+            var persons = new Dictionary<string, List<Person>>();
+            foreach (var person in Task2.ReadFile())
+            {
+                string zodiacSign = GetZodiacSign(DateOnly.Parse(person.DateOfBirth));
+                if (!persons.ContainsKey(zodiacSign))
+                {
+                    persons[zodiacSign] = new List<Person>();
+                }
+                persons[zodiacSign].Add(person);
+            }
             _ = "𓆏";
 
             foreach (var zodiacSign in persons.Keys) {
