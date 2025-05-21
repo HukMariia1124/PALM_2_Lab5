@@ -44,11 +44,11 @@ namespace Lab5
 
         private static void ScoreParse(Person p, out int maths, out int physics, out int cs)
         {
-            if (p.MathsScore == "-") maths = 0;
+            if (p.MathsScore == "-") maths = 2;
             else maths = int.Parse(p.MathsScore);
-            if (p.PhysicsScore == "-") physics = 0;
+            if (p.PhysicsScore == "-") physics = 2;
             else physics = int.Parse(p.PhysicsScore);
-            if (p.ComputerScienceScore == "-") cs = 0;
+            if (p.ComputerScienceScore == "-") cs = 2;
             else cs = int.Parse(p.ComputerScienceScore);
         }
 
@@ -69,8 +69,8 @@ namespace Lab5
 
         public static void Add2_Processing()
         {
-            var persons = new Dictionary<string, List<Person>>();
-            foreach (var person in Task2.ReadFile())
+            Dictionary<string, List<Person>> persons = new();
+            foreach (Person person in Task2.ReadFile())
             {
                 string zodiacSign = GetZodiacSign(DateOnly.Parse(person.DateOfBirth));
                 if (!persons.ContainsKey(zodiacSign))
@@ -79,9 +79,9 @@ namespace Lab5
                 }
                 persons[zodiacSign].Add(person);
             }
-            _ = "𓆏";
+            //_ = "𓆏";
 
-            foreach (var zodiacSign in persons.Keys) {
+            foreach (string zodiacSign in persons.Keys) {
 
                 FileStream file;
                 try
@@ -101,25 +101,44 @@ namespace Lab5
 
         public static string GetZodiacSign(DateOnly date)
         {
-            int day = date.Day;
-            int month = date.Month;
+            if (!File.Exists("ZodiacSigns.txt"))
+                return "Unknown Zodiac Sign";
 
-            return (month, day) switch
+            List<(string Name, (int Month, int Day) Start, (int Month, int Day) End)> zodiacRanges = new();
+            foreach (string line in File.ReadLines("ZodiacSigns.txt"))
             {
-                (1, >= 20) or (2, <= 18) => "Aquarius",
-                (2, >= 19) or (3, <= 20) => "Pisces",
-                (3, >= 21) or (4, <= 19) => "Aries",
-                (4, >= 20) or (5, <= 20) => "Taurus",
-                (5, >= 21) or (6, <= 20) => "Gemini",
-                (6, >= 21) or (7, <= 22) => "Cancer",
-                (7, >= 23) or (8, <= 22) => "Leo",
-                (8, >= 23) or (9, <= 22) => "Virgo",
-                (9, >= 23) or (10, <= 22) => "Libra",
-                (10, >= 23) or (11, <= 21) => "Scorpio",
-                (11, >= 22) or (12, <= 21) => "Sagittarius",
-                (12, >= 22) or (1, <= 19) => "Capricorn",
-                _ => "Unknown Zodiac Sign"
-            };
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                string[] parts = line.Split(':');
+                if (parts.Length != 2) continue;
+                string name = parts[0].Trim();
+                string[] range = parts[1].Trim().Split('-');
+                if (range.Length != 2) continue;
+                string[] startParts = range[0].Trim().Split('/');
+                string[] endParts = range[1].Trim().Split('/');
+                if (startParts.Length != 2 || endParts.Length != 2) continue;
+                zodiacRanges.Add((name, (int.Parse(startParts[0]), int.Parse(startParts[1])), (int.Parse(endParts[0]), int.Parse(endParts[1]))));
+            }
+
+            foreach (var (name, start, end) in zodiacRanges)
+            {
+                if (start.Month > end.Month) //For Capricorn.
+                {
+                    if (date.Month == start.Month && date.Day >= start.Day ||
+                        date.Month == end.Month && date.Day <= end.Day)
+                    {
+                        return name;
+                    }
+                }
+                else
+                {
+                    if ((date.Month > start.Month || (date.Month == start.Month && date.Day >= start.Day)) &&
+                        (date.Month < end.Month || (date.Month == end.Month && date.Day <= end.Day)))
+                    {
+                        return name;
+                    }
+                }
+            }
+            return "Unknown Zodiac Sign";
         }
     }
 }

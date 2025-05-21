@@ -152,7 +152,7 @@ namespace Lab5
             }
 
 
-            var header =
+            string header =
                 $"|{"FirstName".PadLeft((maxLengths[0] + 9) / 2 + 1).PadRight(maxLengths[0] + 2)}|" +
                 $"{"LastName".PadLeft((maxLengths[1] + 8) / 2 + 1).PadRight(maxLengths[1] + 2)}|" +
                 $"{"Patronymic".PadLeft((maxLengths[2] + 10) / 2 + 1).PadRight(maxLengths[2] + 2)}|" +
